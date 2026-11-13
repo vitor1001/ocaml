@@ -331,3 +331,7 @@ META
 /yacc/ocamlyacc
 /yacc/version.h
 /yacc/.gdb_history
+
+/boot/ocaml_boot
+/boot/ocamlc
+/boot/ocamllex

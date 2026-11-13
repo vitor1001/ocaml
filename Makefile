@@ -709,8 +709,17 @@ boot/ocamlrun$(EXE):
 	cp $< $@
 
 # Start up the system from the distribution compiler
+boot/ocamlc boot/ocamllex: boot/ocamlrun$(EXE) runtime/libcamlrun.$(A) $(ocamlyacc_PROGRAM)$(EXE) \
+    stdlib/sys.ml utils/config.ml utils/domainstate.ml utils/domainstate.mli \
+    lambda/runtimedef.ml bytecomp/opcodes.ml bytecomp/opnames.ml
+	@if [ ! -f boot/ocamlc ] || [ ! -f boot/ocamllex ]; then \
+	  sh ./boot/bootstrap_from_source.sh; \
+	fi
+
+bytecomp/byterntm.ml parsing/lexer.ml tools/cvt_emit.ml: boot/ocamllex
+
 .PHONY: coldstart
-coldstart: boot/ocamlrun$(EXE) runtime/libcamlrun.$(A)
+coldstart: boot/ocamlrun$(EXE) runtime/libcamlrun.$(A) boot/ocamlc boot/ocamllex
 	$(MAKE) -C stdlib OCAMLRUN='$$(ROOTDIR)/$<' USE_BOOT_OCAMLC=true all
 	rm -f $(addprefix boot/, libcamlrun.$(A) $(LIBFILES))
 	cp $(addprefix stdlib/, $(LIBFILES)) boot
@@ -967,6 +976,7 @@ endif
 
 # The clean target
 clean:: partialclean
+	rm -f boot/ocaml_boot boot/ocaml_boot.exe boot/ocamlc boot/ocamllex
 	rm -f configure~
 	rm -f $(C_PROGRAMS) $(C_PROGRAMS:=.exe)
 	rm -f $(OCAML_PROGRAMS) $(OCAML_PROGRAMS:=.exe)
